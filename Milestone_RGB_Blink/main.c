@@ -1,14 +1,17 @@
 #include <msp430.h>
-char message[];
-char R = 0;
-char G = 0;
-char B = 0;
+char R = 0;                                 //Red LED bit
+char G = 0;                                 //Green LED bit
+char B = 0;                                 //Blue LED bit
+int NRB = 0;                                //Number of received bits
+int BIP = 0;                                //bits in package
+char message [80];
+
 int main(void)
 {
   WDTCTL = WDTPW + WDTHOLD;                 // Stop WDT
 // CCRs stuff
-  P1DIR |= BIT2+BIT3+BIT4;                  // P1.2 and P1.3 and P1.4 to gpio/CCRs
   P1SEL |= BIT2+BIT3+BIT4;                  // P1.2 and P1.3 and P1.4 CCR stuff
+  P1DIR |= BIT2+BIT3+BIT4;                  // P1.2 and P1.3 and P1.4 to gpio/CCRs
 
 //Timer Stuff for led
   TA0CCR0 = 512-1;                          // PWM Period is set to 511
@@ -17,7 +20,7 @@ int main(void)
   TA0CCTL2 = OUTMOD_7;                      // CCR2 reset/set
   TA0CCR2 = 0;                              // CCR2 PWM initialization duty cycle
   TA0CCTL3 = OUTMOD_7;                      // CCR3 reset/set
-  TA0CCR3 = 0;                              // CCR3 PWM initialization duty cycle
+  TA0CCR3 = 255;                              // CCR3 PWM initialization duty cycle
   TA0CTL = TASSEL_2 + MC_1 + TACLR;         // SMCLK, up mode, clear TAR
 
 //Timer interrupt
@@ -28,42 +31,47 @@ int main(void)
 //UART Jawn
 
   P3SEL |= BIT3+BIT4;                       // P3.3,4 = USCI_A0 TXD/RXD
-  UCA0CTL1 |= UCSWRST;                      // **Put state machine in reset**
-  UCA0CTL1 |= UCSSEL_2;                     // SMCLK
-  UCA0BR0 = 9;                              // 1MHz 115200 (see User's Guide)
-  UCA0BR1 = 0;                              // 1MHz 115200
-  UCA0MCTL |= UCBRS_1 + UCBRF_0;            // Modulation UCBRSx=1, UCBRFx=0
-  UCA0CTL1 &= ~UCSWRST;                     // **Initialize USCI state machine**
-  UCA0IE |= UCRXIE;                         // Enable USCI_A0 RX interrupt
+  UCA1CTL1 |= UCSWRST;                      // **Put state machine in reset**
+  UCA1CTL1 |= UCSSEL_2;                     // SMCLK
+  UCA1BR0 = 6;                              // 1MHz 115200 (see User's Guide)
+  UCA1BR1 = 0;                              // 1MHz 115200
+  UCA1MCTL |= UCBRS_1 + UCBRF_0;            // Modulation UCBRSx=1, UCBRFx=0
+  UCA1CTL1 &= ~UCSWRST;                     // **Initialize USCI state machine**
+  UCA1IE |= UCRXIE;                         // Enable USCI_A0 RX interrupt
                                             // Enable USCI_A0 RX interrupt
 
-  __bis_SR_register(LPM0_bits);             // Enter LPM0
+  __bis_SR_register(LPM0_bits + GIE);             // Enter LPM0
   __no_operation();                         // For debugger
 }
-#pragma vector=USCIAB0RX_VECTOR
-__interrupt void USCI0RX_ISR(void)
+#pragma vector=USCI_A1_VECTOR               //A1 is
+__interrupt void USCI_A1_ISR(void)
 {
-   switch(R)//Checks to see if Red led is set
-   {
-   case 0 : //if not set then set it to receiving bit
-       R = UCA0RXBUF;
-   default //leave statement to set the next color
-       break;
-   }
-   switch(G)//checks if Green LED is set
-   {
-   case 0 : //if not set
-       G = UCA0RXBUF;
-   default //if it is then leave
-       break;
-   }
-   switch(B)//checks if blue led is set
-   {
-   case 0 :
-       B = UCA0RXBUF;
-   default //if not leave
-       break;
-   }
+    switch(NRB)
+        {
+        case 0:
+            BIP = UCA1RXBUF;                //the first input will be bits in the package. Set to BIP and increment NRB
+            NRB++;
+        case 1:
+            R = UCA1RXBUF;                                  //the second input is R value. Set to R. Increment NRB
+            NRB++;
+        case 2:
+            G = UCA1RXBUF;                                  //the third input is G value. Set to G. Increment NRB
+            NRB++;
+        case 3:
+            B = UCA1RXBUF;                                  //the fourth input is B value. Set to B. Increment NRB
+            NRB++;
+        }
+    if(NRB > 3 && NRB < BIP)
+        {
+
+            message[NRB - 3] = UCA1RXBUF;       //the fifth to BIP-1 values are not for us. Set it to message. Increment NRB every time
+            NRB++;
+        }
+    if(NRB = BIP)
+        {
+        UCA1TXBUF = (message + (BIP-3));        //add BIP-3 to the message, send the message
+        UCA1IFG &= 0;                                               //clear the interrupt flag
+        }
 }
 
 #pragma vector = TIMER1_A0_VECTOR           //Timer counts
@@ -71,5 +79,5 @@ __interrupt void TA1_ISR(void)
     {//Fetch LED values from uart
     TA0CCR1 = R;                            // CCR1 PWM duty cycle
     TA0CCR2 = G;                            // CCR2 PWM duty cycle
-    TA0CCR3 = B;
+    TA0CCR3 = B;                            // CCR3 PWM duty cycle
     }
