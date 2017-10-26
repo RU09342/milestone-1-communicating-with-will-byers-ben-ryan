@@ -13,8 +13,8 @@ ORDERED_OBJS += \
 "./main.obj" \
 "../lnk_msp430fr5994.cmd" \
 $(GEN_CMDS__FLAG) \
--llibc.a \
 -llibmath.a \
+-llibc.a \
 
 -include ../makefile.init
 
@@ -121,33 +121,33 @@ endif
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXE_OUTPUTS += \
-Milestone_RGB_Blink.out \
+PWMTest.out \
 
 EXE_OUTPUTS__QUOTED += \
-"Milestone_RGB_Blink.out" \
+"PWMTest.out" \
 
 BIN_OUTPUTS += \
-Milestone_RGB_Blink.hex \
+PWMTest.hex \
 
 BIN_OUTPUTS__QUOTED += \
-"Milestone_RGB_Blink.hex" \
+"PWMTest.hex" \
 
 
 # All Target
 all: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
-	@$(MAKE) --no-print-directory -Onone "Milestone_RGB_Blink.out"
+	@$(MAKE) --no-print-directory -Onone "PWMTest.out"
 
 # Tool invocations
-Milestone_RGB_Blink.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
+PWMTest.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: MSP430 Linker'
-	"C:/ti/ccsv7/tools/compiler/ti-cgt-msp430_16.9.3.LTS/bin/cl430" -vmspx --data_model=restricted --use_hw_mpy=F5 --advice:power=all --advice:hw_config=all --define=__MSP430FR5994__ -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 -z -m"Milestone_RGB_Blink.map" --heap_size=160 --stack_size=160 --cinit_hold_wdt=on -i"C:/ti/ccsv7/ccs_base/msp430/include" -i"C:/ti/ccsv7/tools/compiler/ti-cgt-msp430_16.9.3.LTS/lib" -i"C:/ti/ccsv7/tools/compiler/ti-cgt-msp430_16.9.3.LTS/include" -i"C:/ti/ccsv7/ccs_base/msp430/lib/5xx_6xx_FRxx" -i"C:/ti/ccsv7/ccs_base/msp430/lib/FR59xx" --priority --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info="Milestone_RGB_Blink_linkInfo.xml" --use_hw_mpy=F5 --rom_model -o "Milestone_RGB_Blink.out" $(ORDERED_OBJS)
+	"C:/ti/ccsv7/tools/compiler/ti-cgt-msp430_16.9.3.LTS/bin/cl430" -vmspx --data_model=restricted --use_hw_mpy=F5 --advice:power=all --advice:hw_config=all --define=__MSP430FR5994__ -g --printf_support=minimal --diag_warning=225 --diag_wrap=off --display_error_number --silicon_errata=CPU21 --silicon_errata=CPU22 --silicon_errata=CPU40 -z -m"PWMTest.map" --heap_size=160 --stack_size=160 --cinit_hold_wdt=on -i"C:/ti/ccsv7/ccs_base/msp430/include" -i"C:/ti/ccsv7/ccs_base/msp430/lib/5xx_6xx_FRxx" -i"C:/ti/ccsv7/tools/compiler/ti-cgt-msp430_16.9.3.LTS/lib" -i"C:/ti/ccsv7/tools/compiler/ti-cgt-msp430_16.9.3.LTS/include" -i"C:/ti/ccsv7/ccs_base/msp430/lib/FR59xx" --priority --reread_libs --diag_wrap=off --display_error_number --warn_sections --xml_link_info="PWMTest_linkInfo.xml" --use_hw_mpy=F5 --rom_model -o "PWMTest.out" $(ORDERED_OBJS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
-Milestone_RGB_Blink.hex: $(EXE_OUTPUTS)
+PWMTest.hex: $(EXE_OUTPUTS)
 	@echo 'Invoking: MSP430 Hex Utility'
-	"C:/ti/ccsv7/tools/compiler/ti-cgt-msp430_16.9.3.LTS/bin/hex430" --memwidth=8 --romwidth=8 -o "Milestone_RGB_Blink.hex" $(EXE_OUTPUTS__QUOTED)
+	"C:/ti/ccsv7/tools/compiler/ti-cgt-msp430_16.9.3.LTS/bin/hex430" --memwidth=8 --romwidth=8 -o "PWMTest.hex" $(EXE_OUTPUTS__QUOTED)
 	@echo 'Finished building: $@'
 	@echo ' '
 
